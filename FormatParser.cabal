@@ -1,0 +1,20 @@
+Name:                FormatParser
+Version:             0.0.1
+cabal-version:       >= 1.6
+Synopsis:            Like Parsec, but two-way! (Experimental!)
+Description:         A Parsec inspired library that allows you to
+                     simultaneously write parsers and formaters,
+                     avoiding duplication of effort.
+License:             GPL
+Author:              Christopher Olah
+Maintainer:          Christopher Olah <chris@colah.ca>
+build-type:          Simple
+Category:            Text
+
+Library
+    Build-Depends:       base >= 3 && < 5
+    Extensions:          ViewPatterns
+    Exposed-Modules:     
+        Text.FormatParser.Primitives
+    Other-Modules:
+        Text.FormatParser.Definitions
