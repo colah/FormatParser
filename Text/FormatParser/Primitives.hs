@@ -72,9 +72,10 @@ endBy  = endByN 0
 
 
 whitespace :: FormatParser Char a String
-whitespace = (const " ") =|= (many $ oneOf " \t\n")
+whitespace = const " " =|= many (oneOf " \t\n")
 
 char :: Char -> FormatParser Char a Char
 char c = const c =|= oneOf [c]
 
+digit = oneOf "0123456789"
 
