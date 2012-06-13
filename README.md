@@ -32,6 +32,8 @@ Just [["abc","def","egh"],["foo","bar","blah"]]
 Just "abc,def,egh\nfoo,bar,blah\n"
 ```
 
+FormatParser also provides really cool binary parsing tools. But we'll need to get used to working with FormatParser Monads before we get to that...
+
 Monadic Examples and Friends
 ----------------------------
 
@@ -151,4 +153,47 @@ do
 ```
 
 On the other hand, when you need an input of a parser with zero information, use a `()`. This avoids second rank types and makes them more flexible. For example, `sepBy :: FormatParser s i o -> FormatParser s () o2 -> FormatParser s [i] [o]`.
+
+
+Binary Parsing
+--------------
+
+`Text.FormatParser.Binary` provides a number of useful binary parsing primitives: `bin8`, `bin32le` (little Endian), `bin32be` (big Endian)... These are all polymorphic because of the different things that can be represented in 8 bits or 32 bits. If you want to get a 32 bit `Int`
+
+```haskell
+do
+	...
+	foo :: Int <- bin32be
+	...
+```
+
+and if you want a `Float`
+
+```haskell
+do
+	...
+	foo :: Float <- bin32be
+	...
+```
+
+For a more specific example, lets write a [binary STL](http://en.wikipedia.org/wiki/STL_%28file_format%29#Binary_STL) parser. 
+
+```haskell
+type Vec = (Float, Float, Float)
+type Triangle = (Vec, Vec, Vec)
+
+vec :: FormatParser ByteString Vec Vec
+vec = manyT3 bin32be
+
+bstl :: FormatParser ByteString [Triangle] [Triangle]
+bstl = do
+	header :: [Int]      <- (const [1..80]) =|= manyN 80 bin8
+	len    :: Int        <- length          =|= bin32be
+	tris   :: [Triangle] <- manyN len $ do
+				const (0,0,0) =|= vec -- throw away normal
+				tri <- manyT3 vec
+				return tri
+	return tris
+```
+
 
