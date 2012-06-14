@@ -28,6 +28,19 @@ instance Bin8 Char where
 	putBin8 = putWord8 . c2w
 
 
+class Bin16le a where
+	getBin16le :: Get a
+	putBin16le :: a -> Put
+
+instance Bin16le Word16 where
+	getBin16le = getWord16le
+	putBin16le = putWord16le
+
+instance Bin16le Int where
+	getBin16le = fmap fromIntegral getWord16le
+	putBin16le = putWord16le . fromIntegral
+
+
 
 class Bin32le a where
 	getBin32le :: Get a
@@ -38,8 +51,8 @@ instance Bin32le Float where
 	putBin32le = putFloat32le
 
 instance Bin32le Word32 where
-	getBin32le = fmap fromIntegral getWord32le
-	putBin32le = putWord32le . fromIntegral
+	getBin32le = getWord32le
+	putBin32le = putWord32le
 
 instance Bin32le Int where
 	getBin32le = fmap fromIntegral getWord32le
@@ -69,6 +82,20 @@ instance Bin64le Integer where
 	getBin64le = fmap fromIntegral getWord64le
 	putBin64le = putWord64le . fromIntegral
 
+
+
+
+class Bin16be a where
+	getBin16be :: Get a
+	putBin16be :: a -> Put
+
+instance Bin16be Word16 where
+	getBin16be = getWord16be
+	putBin16be = putWord16be
+
+instance Bin16be Int where
+	getBin16be = fmap fromIntegral getWord16be
+	putBin16be = putWord16be . fromIntegral
 
 
 
@@ -119,11 +146,20 @@ instance Bin64be Integer where
 
 
 
-bin8 :: Bin32le a => FormatParser ByteString a a
+bin8 :: Bin8 a => FormatParser ByteString a a
 bin8 = FormatParser formater parser
 	where
-		formater val = Just (val, runPut $ putBin32le val )
-		parser str = case runGetPartial getBin32le str of
+		formater val = Just (val, runPut $ putBin8 val )
+		parser str = case runGetPartial getBin8 str of
+			Done result remainder -> Just (result, remainder)
+			_ -> Nothing
+
+
+bin16le :: Bin16le a => FormatParser ByteString a a
+bin16le = FormatParser formater parser
+	where
+		formater val = Just (val, runPut $ putBin16le val )
+		parser str = case runGetPartial getBin16le str of
 			Done result remainder -> Just (result, remainder)
 			_ -> Nothing
 
@@ -140,6 +176,15 @@ bin64le = FormatParser formater parser
 	where
 		formater val = Just (val, runPut $ putBin64le val )
 		parser str = case runGetPartial getBin64le str of
+			Done result remainder -> Just (result, remainder)
+			_ -> Nothing
+
+
+bin16be :: Bin16be a => FormatParser ByteString a a
+bin16be = FormatParser formater parser
+	where
+		formater val = Just (val, runPut $ putBin16be val )
+		parser str = case runGetPartial getBin16be str of
 			Done result remainder -> Just (result, remainder)
 			_ -> Nothing
 

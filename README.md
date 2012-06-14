@@ -179,20 +179,21 @@ do
 For a more specific example, lets write a [binary STL](http://en.wikipedia.org/wiki/STL_%28file_format%29#Binary_STL) parser. 
 
 ```haskell
-type Vec = (Float, Float, Float)
-type Triangle = (Vec, Vec, Vec)
+type Point = (Float, Float, Float)
+type Triangle = (Point, Point, Point)
 
-vec :: FormatParser ByteString Vec Vec
-vec = manyT3 bin32be
+point :: FormatParser ByteString Point Point
+point = manyT3 $ bin32le
 
 bstl :: FormatParser ByteString [Triangle] [Triangle]
 bstl = do
-	header :: [Int]      <- (const [1..80]) =|= manyN 80 bin8
-	len    :: Int        <- length          =|= bin32be
+	header :: [Int]      <- (const [0..80]) =|= manyN 80 bin8
+	len    :: Int        <- length =|= bin32le
 	tris   :: [Triangle] <- manyN len $ do
-				const (0,0,0) =|= vec -- throw away normal
-				tri <- manyT3 vec
-				return tri
+						normal   <- const (0,0,0) =|= point
+						triangle <- manyT3 point
+						unknown  <- const (0::Int) =|= bin16le
+						return triangle
 	return tris
 ```
 
